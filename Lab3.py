@@ -52,7 +52,25 @@ def simulate_election(model, n_sim):
 result = simulate_election(predictwise, 10000)
 print (result >= 269).sum()
 result
-plt.hist(result, bins=30)
+
+def plot_simulation(simulation):
+    plt.hist(simulation, bins=np.arange(200, 538, 1),
+             label="simulations", align="left", normed=True)
+    plt.axvline(332, 0, .5, color='r', label='Actual Outcome')
+    plt.axvline(269, 0, .5, color='k', label='Victory Threshold')
+    p05 = np.percentile(simulation, 5.)
+    p95 = np.percentile(simulation, 95.)
+    iq = int(p95-p05)
+    pwin = ((simulation >= 269).mean() * 100)
+    plt.title("Chance of Obama Victory: %0.2f%%, Spread: %d votes" % (pwin, iq))
+    plt.legend(frameon=False, loc='upper left')
+    plt.xlabel("Obama Electoral College Votes")
+    plt.ylabel("Probability")
+    sns.despine()
+
+plot_simulation(result)
+
+
 
 
 # Lab3-Freq.ipynb
