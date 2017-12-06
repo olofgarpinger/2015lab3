@@ -70,6 +70,52 @@ def plot_simulation(simulation):
 
 plot_simulation(result)
 
+from scipy.stats import bernoulli
+brv = bernoulli(p=0.3)
+brv.rvs(size=20)
+
+event_space=[0,1]
+plt.figure(figsize=(12,8))
+colors=sns.color_palette()
+for i, p in enumerate([0.1, 0.2, 0.5, 0.7]):
+    ax = plt.subplot(1, 4, i+1)
+    plt.bar(event_space, bernoulli.pmf(event_space, p), label=p, color = colors[i], alpha = 0.5)
+    plt.plot(event_space, bernoulli.cdf(event_space, p), color = colors[i], alpha=0.5)
+
+    ax.xaxis.set_ticks(event_space)
+
+    plt.ylim((0,1))
+    plt.legend(loc=0)
+    if i == 0:
+        plt.ylabel("PDF at $k$")
+plt.tight_layout()
+
+CDF = lambda x: np.float(np.sum(result < x))/result.shape[0]
+for votes in [200, 300, 320, 340, 360, 400, 500]:
+    print "Obama Win CDF at votes=", votes, " is ", CDF(votes)
+
+votelist = np.arange(0,540, 5)
+plt.plot(votelist, [CDF(v) for v in votelist], '.-')
+plt.xlim([200,400])
+plt.ylim([-0.1,1.1])
+plt.xlabel("votes for Obama")
+plt.ylabel("probability of Obama win")
+
+from scipy.stats import binom
+plt.figure(figsize=(12,6))
+k = np.arange(0, 200)
+for p, color in zip([0.1, 0.3, 0.5, 0.7, 0.9], colors):
+    rv = binom(200, p)
+    plt.plot(k, rv.pmf(k), '.', lw=2, color=color, label=p)
+    plt.fill_between(k, rv.pmf(k), color=color, alpha=0.5)
+q=plt.legend()
+plt.tight_layout()
+q = plt.ylabel("PDF at $k$")
+q = plt.xlabel("$k$")
+
+
+
+
 
 
 
