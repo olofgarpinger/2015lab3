@@ -115,13 +115,97 @@ q = plt.xlabel("$k$")
 
 
 
-
-
-
-
 # Lab3-Freq.ipynb
+import numpy as np
+import scipy as sp
+import matplotlib as mpl
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import pandas as pd
+import time
+pd.set_option('display.width', 500)
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.notebook_repr_html', True)
+import seaborn as sns
+sns.set_style("whitegrid")
+sns.set_context("poster")
 
+df = pd.read_table("babyboom.dat.txt", header=None, sep='\s+', names=['24hrtime','sex','weight','minutes'])
+df.head()
+df.minutes.mean()
 
+df.corr()
 
+g = sns.FacetGrid(col="sex", data=df, size=8)
+g.map(plt.hist, "weight")
+
+f = lambda x, l: l*np.exp(-l*x)*(x>0)
+xpts=np.arange(-2,3,0.1)
+plt.plot(xpts, f(xpts, 2),'o')
+plt.xlabel("x")
+plt.ylabel("exponential pdf")
+
+from scipy.stats import expon
+
+x = np.linspace(0, 4, 100)
+colors = sns.color_palette()
+
+lambda_ = [0.5, 1, 2, 4]
+plt.figure(figsize=(12,4))
+for l, c in zip(lambda_, colors):
+    plt.plot(x, expon.pdf(x, scale=1./l), lw=2,
+             color=c, label = "$\lambda = %.1f$"%l)
+    plt.fill_between(x, expon.pdf(x, scale=1./l), color = c, alpha = .33)
+
+plt.legend()
+plt.ylabel("PDF at $x$")
+plt.xlabel("$x$")
+plt.title("Probability density function of an Exponential random variable;\
+ differing $\lambda$")
+
+from scipy.stats import expon
+plt.plot(xpts, expon.pdf(xpts, scale=1./2.), 'o')
+plt.hist(expon.rvs(size=1000, scale=1./2.), normed=True, alpha=0.5, bins=30)
+plt.xlabel("x")
+plt.title("exponential pdf and samples(normalize)")
+
+rv = expon(scale=0.5)
+plt.plot(xpts, rv.pdf(xpts),'o')
+plt.hist(rv.rvs(size=1000), normed=True, alpha = 0.5, bins=30)
+plt.plot(xpts, rv.cdf(xpts))
+plt.xlabel("x")
+plt.title("exponential pdf, cdf and samples(normalized)")
+
+timediffs = df.minutes.diff()[1:]
+timediffs.hist(bins=20)
+
+lambda_from_mean = 1./timediffs.mean()
+print lambda_from_mean, 1./lambda_from_mean
+
+minutes=np.arange(0, 160, 5)
+rv = expon(scale=1./lambda_from_mean)
+plt.plot(minutes,rv.pdf(minutes),'o')
+timediffs.hist(normed=True, alpha=0.5)
+plt.xlabel("minutes")
+plt.title("Normalized data and model for estimated $\hat{\lambda}$")
 
 # Lab3-Stats.ipynb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
