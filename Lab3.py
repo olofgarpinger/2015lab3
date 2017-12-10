@@ -189,6 +189,34 @@ timediffs.hist(normed=True, alpha=0.5)
 plt.xlabel("minutes")
 plt.title("Normalized data and model for estimated $\hat{\lambda}$")
 
+from scipy.stats import poisson
+k = np.arange(15)
+plt.figure(figsize=(12,8))
+for i, lambda_ in enumerate([1, 2, 4, 6]):
+    plt.plot(k, poisson.pmf(k, lambda_), '-o', label=lambda_, color=colors[i])
+    plt.fill_between(k, poisson.pmf(k, lambda_), color = colors[i], alpha=0.5)
+    plt.legend()
+plt.title("poisson distribution")
+plt.ylabel("PDF at $k$")
+plt.xlabel("$k$")
+
+per_hour = df.minutes // 60
+num_births_per_hour=df.groupby(per_hour).minutes.count()
+num_births_per_hour
+
+num_births_per_hour.mean()
+
+k = np.arange(5)
+plt.figure(figsize=(12,8))
+tcount=num_births_per_hour.sum()
+plt.hist(num_births_per_hour, alpha=0.4,  lw=3, normed=True, label="normed hist")
+sns.kdeplot(num_births_per_hour, label="kde")
+plt.plot(k, poisson.pmf(k, num_births_per_hour.mean()), '-o',label="poisson")
+plt.title("Baby births")
+plt.xlabel("births per hour")
+plt.ylabel("rate")
+plt.legend()
+
 # Lab3-Stats.ipynb
 
 
