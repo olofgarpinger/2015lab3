@@ -217,6 +217,47 @@ plt.xlabel("births per hour")
 plt.ylabel("rate")
 plt.legend()
 
+from scipy.stats.distributions import bernoulli
+def throw_a_coin(n):
+    brv = bernoulli(0.5)
+    return brv.rvs(size=n)
+
+def make_throws(number_of_samples, sample_size):
+    start=np.zeros((number_of_samples, sample_size), dtype=int)
+    for i in range(number_of_samples):
+        start[i,:]=throw_a_coin(sample_size)
+    return np.mean(start, axis=1)
+
+sample_sizes=np.arange(1, 1001, 1)
+sample_means = [make_throws(number_of_samples=200, sample_size=i) for i in sample_sizes]
+
+mean_of_sample_means = [np.mean(means) for means in sample_means]
+
+plt.plot(sample_sizes, mean_of_sample_means)
+plt.ylim([0.480,0.520])
+plt.show()
+
+M_samples = 10000
+N_points = timediffs.shape[0]
+bs_np = np.random.choice(timediffs, size=(M_samples, N_points))
+sd_mean=np.mean(bs_np, axis=1)
+plt.hist(sd_mean, bins=30, normed=True, alpha=0.5, label="samples")
+sns.kdeplot(sd_mean, label="inferred distributrion")
+plt.axvline(timediffs.mean(), 0, 1, color="r", label="Our Sample")
+plt.legend()
+plt.show()
+
+rv = expon(scale=1./lambda_from_mean)
+M_samples = 10000
+N_points = timediffs.shape[0]
+bs_p = rv.rvs(size=(M_samples, N_points))
+sd_mean_p=np.mean(bs_p, axis=1)
+sd_std_p=np.std(bs_p, axis=1)
+plt.hist(sd_mean_p, bins=30, normed=True, alpha=0.5)
+sns.kdeplot(sd_mean_p)
+plt.axvline(timediffs.mean(), 0, 1, color="r", label="Our Sample")
+plt.show()
+
 # Lab3-Stats.ipynb
 
 
