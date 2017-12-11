@@ -259,22 +259,76 @@ plt.axvline(timediffs.mean(), 0, 1, color="r", label="Our Sample")
 plt.show()
 
 # Lab3-Stats.ipynb
+import numpy as np
+import scipy as sp
+import matplotlib as mpl
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import pandas as pd
+import time
+pd.set_option('display.width', 500)
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.notebook_repr_html', True)
+import seaborn as sns
+sns.set_style("whitegrid")
+sns.set_context("poster")
 
+from scipy.stats.distributions import bernoulli
+def throw_a_coin(n):
+    brv = bernoulli(0.5)
+    return brv.rvs(size=n)
 
+random_flips = throw_a_coin(10000)
+running_means = np.zeros(10000)
+sequence_lengths = np.arange(1,10001,1)
+for i in sequence_lengths:
+    running_means[i-1] = np.mean(random_flips[:i])
 
+plt.plot(sequence_lengths, running_means)
+plt.xscale('log')
 
+def make_throws(number_of_samples, sample_size):
+    start=np.zeros((number_of_samples, sample_size), dtype=int)
+    for i in range(number_of_samples):
+        start[i,:]=throw_a_coin(sample_size)
+    return np.mean(start, axis=1)
 
+make_throws(number_of_samples=20, sample_size=10)
 
+sample_sizes=np.arange(1,1001,1)
+sample_means = [make_throws(number_of_samples=200, sample_size=i) for i in sample_sizes]
 
+mean_of_sample_means = [np.mean(means) for means in sample_means]
+plt.plot(sample_sizes, mean_of_sample_means)
+plt.ylim([0.480,0.520])
 
+sample_means_at_size_10=sample_means[9]
+sample_means_at_size_100=sample_means[99]
+sample_means_at_size_1000=sample_means[999]
 
+plt.hist(sample_means_at_size_10, bins=np.arange(0,1,0.01), alpha=0.5)
+plt.hist(sample_means_at_size_100, bins=np.arange(0,1,0.01), alpha=0.4)
+plt.hist(sample_means_at_size_1000, bins=np.arange(0,1,0.01), alpha=0.3)
 
+for i in sample_sizes:
+    if i %50 ==0 and i < 1000:
+        plt.scatter([i]*200, sample_means[i], alpha=0.03)
+plt.xlim([0,1000])
+plt.ylim([0.25,0.75])
 
+norm = sp.stats.norm
+x = np.linspace(-5, 5, num=200)
 
-
-
-
-
+colors = sns.color_palette()
+fig = plt.figure(figsize=(12, 6))
+for mu, sigma, c in zip([0.5] * 3, [0.2, 0.5, 0.8], colors):
+    plt.plot(x, norm.pdf(x, mu, sigma), lw=2,
+             c=c, label=r"$\mu = {0:.1f}, \sigma={1:.1f}$".format(mu, sigma))
+    plt.fill_between(x, norm.pdf(x, mu, sigma), color=c, alpha=.4)
+plt.xlim([-5, 5])
+plt.legend(loc=0)
+plt.ylabel("PDF at $x$")
+plt.xlabel("$x$")
 
 
 
