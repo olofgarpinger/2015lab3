@@ -330,5 +330,52 @@ plt.legend(loc=0)
 plt.ylabel("PDF at $x$")
 plt.xlabel("$x$")
 
+def make_throws_var(number_of_samples, sample_size):
+    start=np.zeros((number_of_samples, sample_size), dtype=int)
+    for i in range(number_of_samples):
+        start[i,:]=throw_a_coin(sample_size)
+    return np.var(start, axis=1)
+sample_vars_1000_replicates = [make_throws_var(number_of_samples=1000, sample_size=i) for i in sample_sizes]
+mean_of_sample_vars_1000 = [np.mean(vars) for vars in sample_vars_1000_replicates]
+plt.plot(sample_sizes, mean_of_sample_vars_1000)
+plt.xscale("log")
 
+gallup_2012=pd.read_csv("g12.csv").set_index("State")
+gallup_2012["Unknown"] = 100 - gallup_2012.Democrat - gallup_2012.Republican
+gallup_2012.head()
 
+gallup_2012["SE_percentage"]=100.0*np.sqrt((gallup_2012.Democrat/100.)*((100. - gallup_2012.Democrat)/100.)/(gallup_2012.N -1))
+gallup_2012.head()
+
+from scipy.special import erf
+def uncertain_gallup_model(gallup):
+    sigma = 3
+    prob =  .5 * (1 + erf(gallup.Dem_Adv / np.sqrt(2 * sigma**2)))
+    return pd.DataFrame(dict(Obama=prob), index=gallup.index)
+
+predictwise = pd.read_csv("predictwise.csv").set_index("States")
+model = uncertain_gallup_model(gallup_2012)
+model = model.join(predictwise.Votes)
+
+def simulate_election(model, n_sim):
+    simulations = np.random.uniform(size=(51, n_sim))
+    obama_votes = (simulations < model.Obama.values.reshape(-1, 1)) * model.Votes.values.reshape(-1, 1)
+    return obama_votes.sum(axis=0)
+
+def plot_simulation(simulation):
+    plt.hist(simulation, bins=np.arange(200, 538, 1),
+             label="simulations", align="left", normed=True)
+    plt.axvline(332, 0, .5, color='r', label='Actual Outcome')
+    plt.axvline(269, 0, .5, color='k', label='Victory Threshold')
+    p05 = np.percentile(simulation, 5.)
+    p95 = np.percentile(simulation, 95.)
+    iq = int(p95-p05)
+    pwin = ((simulation >= 269).mean() * 100)
+    plt.title("Chance of Obama Victory: %0.2f%%, Spread: %d votes" % (pwin, iq))
+    plt.legend(frameon=False, loc='upper left')
+    plt.xlabel("Obama Electoral College Votes")
+    plt.ylabel("Probability")
+    sns.despine()
+
+prediction = simulate_election(model, 10000)
+plot_simulation(prediction)
